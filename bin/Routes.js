@@ -219,7 +219,7 @@ async function getFileURL(fileName) {
         Bucket: 'trackapp3',
         Key: fileName
     })
-    return await getSignedUrl(s3, command, { expiresIn: 3600 })
+    return await getSignedUrl(s3, command, { expiresIn: 31536000 })
 
 }
 
@@ -567,6 +567,28 @@ async function uploadfile(file) {
         ACL: 'public-read'
     }
     const command = new PutObjectCommand(uploadParams)
+    try {
+        await client.send(command);
+        const objectUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${nombre}`;
+        console.log(objectUrl)
+        return objectUrl;
+    } catch (error) {
+        console.error("Error al subir el objeto:", error);
+        throw error;
+    }
+
+}
+
+
+async function getFileURLh5p(fileName) {
+    const command = new GetObjectCommand({
+        Bucket: 'microclasestrackapp',
+        Key: fileName
+    })
+    return await getSignedUrl(client, command, { expiresIn: Infinity })
+
+}
+/*    const command = new PutObjectCommand(uploadParams)
     let x = await client.send(command)
     x.nombre = nombre
     return x
@@ -577,14 +599,15 @@ async function getFileURLh5p(fileName) {
         Bucket: 'microclasestrackapp',
         Key: fileName
     })
-    return await getSignedUrl(client, command, { expiresIn: 86400 })
+    return await getSignedUrl(client, command, { expiresIn: 31536000 })
 
-}
+} */
 app.use(fileUdpload())
 app.post("/microclaseS3H5p", async function(req, res) {
     const nombre = req.files.file.name
     const archivo = await uploadfile(req.files.file)
-    const url = await getFileURLh5p(archivo.nombre)
+        /* const url = await getFileURLh5p(archivo.nombre) */
+    const url = await uploadfile(req.files.file)
     res.send({ status: 200, nU: url, nombre: nombre });
 
 
@@ -597,10 +620,9 @@ app.post("/microclaseS3H5p", async function(req, res) {
 
 ///// Ruta para Guardar Las imagenes de la noticia ///////
 app.post("/imagenNoticia", async function(req, res) {
-    const archivo = await uploadimagenes(req.files.file)
-    console.log(archivo.nombre)
-    console.log("archivo.nombre")
-    const url = await getFileURLimagennoticia(archivo.nombre)
+    const url = await uploadimagenes(req.files.file)
+
+    // const url = await getFileURLimagennoticia(archivo.nombre)
     res.send({ status: 200, nU: url });
 
 
@@ -627,17 +649,30 @@ async function uploadimagenes(file) {
         ACL: 'public-read'
     }
     const command = new PutObjectCommand(uploadParams)
+    try {
+        await clientela.send(command);
+        const objectUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${nombre}`;
+        console.log(objectUrl)
+        return objectUrl;
+    } catch (error) {
+        console.error("Error al subir el objeto:", error);
+        throw error;
+    }
+
+    /*console.log(command)
     let x = await clientela.send(command)
     x.nombre = nombre
-    return x
+    return x*/
 
 }
+
+
 async function getFileURLimagennoticia(fileName) {
     const command = new GetObjectCommand({
         Bucket: 'microclasestrackapp',
         Key: fileName
     })
-    return await getSignedUrl(clientela, command, { expiresIn: 86400 })
+    return await getSignedUrl(clientela, command, { expiresIn: Infinity })
 
 }
 
